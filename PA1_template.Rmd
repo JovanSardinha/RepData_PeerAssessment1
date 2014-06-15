@@ -1,19 +1,90 @@
-# Reproducible Research: Peer Assessment 1
+Reproducible Research: Peer Assessment 1
+========================================================
+This analysis makes use of data from a personal activity monitoring device.
+This device collects data at 5 minute intervals through out the day. The data
+consists of two months of data from an anonymous individual collected during
+the months of October and November, 2012 and include the number of steps
+taken in 5 minute intervals each day.
 
+```{r setoptions, echo = FALSE}
+opts_chunk$set(echo = TRUE, warning = FALSE)
+wd<- "C:/Users/jsardinha/Documents/GitHub/RepData_PeerAssessment1"
+setwd(wd)
+```
 
 ## Loading and preprocessing the data
+This repository contains the dataset, hence there is not need to download 
+it seperatly. The following code block downloads the activity.csv data into R
+```{r dataload}
+library(plyr)
+library(ggplot2)
+library(xtable)
 
+zipFile <- "activity.zip"
+unzip(zipFile)
+activityData <- read.csv("activity.csv")
+```
 
+Let's analyze the imported activityData fata.frame
+```{r dataAnalysis}
+print(str(activityData))
+```
+
+After loading the dataset, it is apparent that the $date variable is of class
+"factor". Hence, the following steps will convert it to type "date".
+Note: Missing values coded as 'NA' are not handelled here and will be handelled in subsequent steps.
+```{r dateconvert}
+activityData$date <-as.Date(activityData$date)
+print(str(activityData))
+```
+
+Now we have a clean data set to work with.
 
 ## What is mean total number of steps taken per day?
 
+Plotting the total steps taken each day
+```{r sumSteps}
+activityData2 <-ddply(activityData, ~date , summarize, 
+                      sum_steps = sum(steps),
+                      mean_steps = mean(steps),
+                      median_steps = median(steps)) 
+g <- ggplot(activityData2, aes(x = date, y = sum_steps))
+g <- g + geom_bar(stat="identity")
+g <- g + xlab("Date") + ylab("Total number of steps taken") + labs(title = "Total number of steps taken per day")
+print(g)
+```
+
+Displaying the mean and median steps taken each day
+```{r }
+print((activityData2))
+```
 
 
 ## What is the average daily activity pattern?
 
+```{r}
+activityData3 <-ddply(activityData, ~interval , summarize, 
+                     mean_steps = mean(steps, na.rm = TRUE))
+yMax<- max(activityData3[,2])
+xMax <- activityData3[which.max(activityData3[,2]),1]
+g <- ggplot(activityData3, aes(x = interval, y = mean_steps))
+g <- g + geom_line()
+labelValue <- paste("Max value at (", as.character(xMax), ",", yMax, ")", sep = "")
+g <- g + annotate("text", x=xMax, y=yMax, label=labelValue)
+g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on all days")
+print(g)
+```
 
 
 ## Imputing missing values
+
+### Strategy for dealing with missing values
+Finding the total number of rows with missing values (coded as NA).
+```{r}
+summary(activityData)
+```
+from this we see that NA's only exist in the $steps variable and that there are 2304 of them.
+
 
 
 
