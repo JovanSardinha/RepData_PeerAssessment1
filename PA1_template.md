@@ -165,6 +165,26 @@ print(g)
 
 ## Imputing missing values
 
+### Strategy for dealing with missing values
+Finding the total number of rows with missing values (coded as NA).
+
+```r
+summary(activityData)
+```
+
+```
+##      steps            date               interval   
+##  Min.   :  0.0   Min.   :2012-10-01   Min.   :   0  
+##  1st Qu.:  0.0   1st Qu.:2012-10-16   1st Qu.: 589  
+##  Median :  0.0   Median :2012-10-31   Median :1178  
+##  Mean   : 37.4   Mean   :2012-10-31   Mean   :1178  
+##  3rd Qu.: 12.0   3rd Qu.:2012-11-15   3rd Qu.:1766  
+##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355  
+##  NA's   :2304
+```
+from this we see that NA's only exist in the $steps variable and that there are 2304 of them.
+
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
