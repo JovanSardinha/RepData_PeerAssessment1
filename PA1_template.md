@@ -75,7 +75,7 @@ print(g)
 Displaying the mean and median steps taken each day
 
 ```r
-print((activityData2))
+print(activityData2)
 ```
 
 ```
@@ -154,13 +154,15 @@ yMax<- max(activityData3[,2])
 xMax <- activityData3[which.max(activityData3[,2]),1]
 g <- ggplot(activityData3, aes(x = interval, y = mean_steps))
 g <- g + geom_line()
-labelValue <- paste("Max value at (", as.character(xMax), ",", yMax, ")", sep = "")
+labelValue <- "Max value"
 g <- g + annotate("text", x=xMax, y=yMax, label=labelValue)
 g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on all days")
 print(g)
 ```
 
-![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
+![plot of chunk AverageStepsGraph](figure/AverageStepsGraph.png) 
+
+Hence the maximum value occured at interval 835 and had the value of 206.169811320755. This is illustrated in the above graph with the annotation 'Max value' 
 
 ## Imputing missing values
 
@@ -184,19 +186,205 @@ summary(activityData)
 
 
 
-#Modify
-from this we see that NA's only exist in the $steps variable and that there are "r numberNa" of them which constitues for 'r perncentNa' %.
+from this we see that NA's only exist in the $steps variable and that there are 2304 of them which constitues for 13.1148 %.
 
 
 ```r
-ddply(activityData, activityData[,1:2])
+tidyData<- activityData
+tidyData[is.na(tidyData[, 1]), 1] <- with(tidyData, tapply(steps, interval, mean, na.rm = TRUE))
+
+summary(tidyData)
 ```
 
 ```
-## Error: no applicable method for 'as.quoted' applied to an object of class
-## "data.frame"
+##      steps            date               interval   
+##  Min.   :  0.0   Min.   :2012-10-01   Min.   :   0  
+##  1st Qu.:  0.0   1st Qu.:2012-10-16   1st Qu.: 589  
+##  Median :  0.0   Median :2012-10-31   Median :1178  
+##  Mean   : 37.4   Mean   :2012-10-31   Mean   :1178  
+##  3rd Qu.: 27.0   3rd Qu.:2012-11-15   3rd Qu.:1766  
+##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355
+```
+As you can see above all the 2304 NA's are gone, but the summary statistics of the data set are still the same.
+
+### Analyzing the tidyData 
+Plotting the total steps taken each day with the tidyData
+
+```r
+tidyData2 <-ddply(tidyData, ~date , summarize, 
+                      sum_steps = sum(steps),
+                      mean_steps = mean(steps),
+                      median_steps = median(steps)) 
+g <- ggplot(tidyData2, aes(x = date, y = sum_steps))
+g <- g + geom_bar(stat="identity")
+g <- g + xlab("Date") + ylab("Total number of steps taken") + labs(title = "Total number of steps taken per day")
+print(g)
 ```
 
+![plot of chunk sumSteps2](figure/sumSteps2.png) 
 
+Displaying the mean and median steps taken each day
+
+```r
+mrg <- merge(activityData2, tidyData2, by = "date", suffixes = c(".orig", ".tidy"))
+print(mrg[,c(1,3,6)])
+```
+
+```
+##          date mean_steps.orig mean_steps.tidy
+## 1  2012-10-01              NA         37.3826
+## 2  2012-10-02          0.4375          0.4375
+## 3  2012-10-03         39.4167         39.4167
+## 4  2012-10-04         42.0694         42.0694
+## 5  2012-10-05         46.1597         46.1597
+## 6  2012-10-06         53.5417         53.5417
+## 7  2012-10-07         38.2465         38.2465
+## 8  2012-10-08              NA         37.3826
+## 9  2012-10-09         44.4826         44.4826
+## 10 2012-10-10         34.3750         34.3750
+## 11 2012-10-11         35.7778         35.7778
+## 12 2012-10-12         60.3542         60.3542
+## 13 2012-10-13         43.1458         43.1458
+## 14 2012-10-14         52.4236         52.4236
+## 15 2012-10-15         35.2049         35.2049
+## 16 2012-10-16         52.3750         52.3750
+## 17 2012-10-17         46.7083         46.7083
+## 18 2012-10-18         34.9167         34.9167
+## 19 2012-10-19         41.0729         41.0729
+## 20 2012-10-20         36.0938         36.0938
+## 21 2012-10-21         30.6285         30.6285
+## 22 2012-10-22         46.7361         46.7361
+## 23 2012-10-23         30.9653         30.9653
+## 24 2012-10-24         29.0104         29.0104
+## 25 2012-10-25          8.6528          8.6528
+## 26 2012-10-26         23.5347         23.5347
+## 27 2012-10-27         35.1354         35.1354
+## 28 2012-10-28         39.7847         39.7847
+## 29 2012-10-29         17.4236         17.4236
+## 30 2012-10-30         34.0938         34.0938
+## 31 2012-10-31         53.5208         53.5208
+## 32 2012-11-01              NA         37.3826
+## 33 2012-11-02         36.8056         36.8056
+## 34 2012-11-03         36.7049         36.7049
+## 35 2012-11-04              NA         37.3826
+## 36 2012-11-05         36.2465         36.2465
+## 37 2012-11-06         28.9375         28.9375
+## 38 2012-11-07         44.7326         44.7326
+## 39 2012-11-08         11.1771         11.1771
+## 40 2012-11-09              NA         37.3826
+## 41 2012-11-10              NA         37.3826
+## 42 2012-11-11         43.7778         43.7778
+## 43 2012-11-12         37.3785         37.3785
+## 44 2012-11-13         25.4722         25.4722
+## 45 2012-11-14              NA         37.3826
+## 46 2012-11-15          0.1424          0.1424
+## 47 2012-11-16         18.8924         18.8924
+## 48 2012-11-17         49.7882         49.7882
+## 49 2012-11-18         52.4653         52.4653
+## 50 2012-11-19         30.6979         30.6979
+## 51 2012-11-20         15.5278         15.5278
+## 52 2012-11-21         44.3993         44.3993
+## 53 2012-11-22         70.9271         70.9271
+## 54 2012-11-23         73.5903         73.5903
+## 55 2012-11-24         50.2708         50.2708
+## 56 2012-11-25         41.0903         41.0903
+## 57 2012-11-26         38.7569         38.7569
+## 58 2012-11-27         47.3819         47.3819
+## 59 2012-11-28         35.3576         35.3576
+## 60 2012-11-29         24.4688         24.4688
+## 61 2012-11-30              NA         37.3826
+```
+
+```r
+print(mrg[,c(1,4,7)])
+```
+
+```
+##          date median_steps.orig median_steps.tidy
+## 1  2012-10-01                NA             34.11
+## 2  2012-10-02                 0              0.00
+## 3  2012-10-03                 0              0.00
+## 4  2012-10-04                 0              0.00
+## 5  2012-10-05                 0              0.00
+## 6  2012-10-06                 0              0.00
+## 7  2012-10-07                 0              0.00
+## 8  2012-10-08                NA             34.11
+## 9  2012-10-09                 0              0.00
+## 10 2012-10-10                 0              0.00
+## 11 2012-10-11                 0              0.00
+## 12 2012-10-12                 0              0.00
+## 13 2012-10-13                 0              0.00
+## 14 2012-10-14                 0              0.00
+## 15 2012-10-15                 0              0.00
+## 16 2012-10-16                 0              0.00
+## 17 2012-10-17                 0              0.00
+## 18 2012-10-18                 0              0.00
+## 19 2012-10-19                 0              0.00
+## 20 2012-10-20                 0              0.00
+## 21 2012-10-21                 0              0.00
+## 22 2012-10-22                 0              0.00
+## 23 2012-10-23                 0              0.00
+## 24 2012-10-24                 0              0.00
+## 25 2012-10-25                 0              0.00
+## 26 2012-10-26                 0              0.00
+## 27 2012-10-27                 0              0.00
+## 28 2012-10-28                 0              0.00
+## 29 2012-10-29                 0              0.00
+## 30 2012-10-30                 0              0.00
+## 31 2012-10-31                 0              0.00
+## 32 2012-11-01                NA             34.11
+## 33 2012-11-02                 0              0.00
+## 34 2012-11-03                 0              0.00
+## 35 2012-11-04                NA             34.11
+## 36 2012-11-05                 0              0.00
+## 37 2012-11-06                 0              0.00
+## 38 2012-11-07                 0              0.00
+## 39 2012-11-08                 0              0.00
+## 40 2012-11-09                NA             34.11
+## 41 2012-11-10                NA             34.11
+## 42 2012-11-11                 0              0.00
+## 43 2012-11-12                 0              0.00
+## 44 2012-11-13                 0              0.00
+## 45 2012-11-14                NA             34.11
+## 46 2012-11-15                 0              0.00
+## 47 2012-11-16                 0              0.00
+## 48 2012-11-17                 0              0.00
+## 49 2012-11-18                 0              0.00
+## 50 2012-11-19                 0              0.00
+## 51 2012-11-20                 0              0.00
+## 52 2012-11-21                 0              0.00
+## 53 2012-11-22                 0              0.00
+## 54 2012-11-23                 0              0.00
+## 55 2012-11-24                 0              0.00
+## 56 2012-11-25                 0              0.00
+## 57 2012-11-26                 0              0.00
+## 58 2012-11-27                 0              0.00
+## 59 2012-11-28                 0              0.00
+## 60 2012-11-29                 0              0.00
+## 61 2012-11-30                NA             34.11
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+```r
+tidyData3<- tidyData
+#tidyData3$Day <- weekdays(tidyData3$date)
+tidyData3$DayType <- ifelse(!(weekdays(tidyData3$date) %in% c('Saturday','Sunday')), "Weekday", "Weekend")
+```
+
+A panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+
+```r
+tidyData4 <-ddply(tidyData3, ~interval+DayType , summarize, 
+                     mean_steps = mean(steps, na.rm = TRUE))
+g <- ggplot(tidyData4, aes(x = interval, y = mean_steps))
+g <- g + geom_line()
+g <- g + facet_grid(DayType~.)
+g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on weekdays vs. weekends")
+print(g)
+```
+
+![plot of chunk DayTypePlot](figure/DayTypePlot.png) 
+
+EOF

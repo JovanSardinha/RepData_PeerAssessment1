@@ -43,7 +43,7 @@ Now we have a clean data set to work with.
 ## What is mean total number of steps taken per day?
 
 Plotting the total steps taken each day
-```{r sumSteps}
+```{r sumSteps, fig.width = 11}
 activityData2 <-ddply(activityData, ~date , summarize, 
                       sum_steps = sum(steps),
                       mean_steps = mean(steps),
@@ -55,47 +55,89 @@ print(g)
 ```
 
 Displaying the mean and median steps taken each day
-```{r }
-print((activityData2))
+```{r meanMedianDisplay}
+print(activityData2)
 ```
 
 
 ## What is the average daily activity pattern?
 
-```{r}
+```{r AverageStepsGraph, fig.width = 11 }
 activityData3 <-ddply(activityData, ~interval , summarize, 
                      mean_steps = mean(steps, na.rm = TRUE))
 yMax<- max(activityData3[,2])
 xMax <- activityData3[which.max(activityData3[,2]),1]
 g <- ggplot(activityData3, aes(x = interval, y = mean_steps))
 g <- g + geom_line()
-labelValue <- paste("Max value at (", as.character(xMax), ",", yMax, ")", sep = "")
+labelValue <- "Max value"
 g <- g + annotate("text", x=xMax, y=yMax, label=labelValue)
 g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on all days")
 print(g)
 ```
 
+Hence the maximum value occured at interval `r as.character(xMax)` and had the value of `r as.character(yMax)`. This is illustrated in the above graph with the annotation 'Max value' 
+
 ## Imputing missing values
 
 ### Strategy for dealing with missing values
 Finding the total number of rows with missing values (coded as NA).
-```{r}
+```{r summaryActivityData}
 summary(activityData)
 ```
 
-```{r na_analysis, echo=FALSE}
-numberNa <- sum(is.na(activityData))
-percentNa <- (numberNa/length(activityData$steps))*100
+```{r naAnalysis, echo=FALSE}
+numberNa <- sum(is.na(activityData$steps))
+percentNa <- mean(is.na(activityData$steps))*100
 ```
 
-#Modify
-from this we see that NA's only exist in the $steps variable and that there are "r numberNa" of them which constitues for 'r perncentNa' %.
+from this we see that NA's only exist in the $steps variable and that there are `r numberNa` of them which constitues for `r percentNa` %.
 
-```{r}
-ddply(activityData, steps~date, summarize)
+```{r removeNA}
+tidyData<- activityData
+tidyData[is.na(tidyData[, 1]), 1] <- with(tidyData, tapply(steps, interval, mean, na.rm = TRUE))
 
+summary(tidyData)
+```
+As you can see above all the `r numberNa` NA's are gone, but the summary statistics of the data set are still the same.
+
+### Analyzing the tidyData 
+Plotting the total steps taken each day with the tidyData
+```{r sumSteps2, fig.width = 11}
+tidyData2 <-ddply(tidyData, ~date , summarize, 
+                      sum_steps = sum(steps),
+                      mean_steps = mean(steps),
+                      median_steps = median(steps)) 
+g <- ggplot(tidyData2, aes(x = date, y = sum_steps))
+g <- g + geom_bar(stat="identity")
+g <- g + xlab("Date") + ylab("Total number of steps taken") + labs(title = "Total number of steps taken per day")
+print(g)
 ```
 
-
+Displaying the mean and median steps taken each day
+```{r meanMedianDisplay2}
+mrg <- merge(activityData2, tidyData2, by = "date", suffixes = c(".orig", ".tidy"))
+print(mrg[,c(1,3,6)])
+print(mrg[,c(1,4,7)])
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
+```{r seperatingWeekdays}
+
+tidyData3<- tidyData
+#tidyData3$Day <- weekdays(tidyData3$date)
+tidyData3$DayType <- ifelse(!(weekdays(tidyData3$date) %in% c('Saturday','Sunday')), "Weekday", "Weekend")
+```
+
+A panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
+
+```{r DayTypePlot, fig.width = 11}
+tidyData4 <-ddply(tidyData3, ~interval+DayType , summarize, 
+                     mean_steps = mean(steps, na.rm = TRUE))
+g <- ggplot(tidyData4, aes(x = interval, y = mean_steps))
+g <- g + geom_line()
+g <- g + facet_grid(DayType~.)
+g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on weekdays vs. weekends")
+print(g)
+```
+
+EOF
