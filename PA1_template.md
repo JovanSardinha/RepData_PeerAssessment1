@@ -1,10 +1,16 @@
-Reproducible Research: Peer Assessment 1
-========================================================
-This analysis makes use of data from a personal activity monitoring device.
-This device collects data at 5 minute intervals through out the day. The data
-consists of two months of data from an anonymous individual collected during
-the months of October and November, 2012 and include the number of steps
-taken in 5 minute intervals each day.
+# Reproducible Research: Peer Assessment 1
+
+
+**Background:** This analysis makes use of data from a personal activity monitoring device.This device collects data at 5 minute intervals through out the day. The data consists of two months of data from an anonymous individual collected during the months of October and November, 2012 and include the number of steps taken in 5 minute intervals each day.
+*****
+
+**Overview:** The following document provides insight on:  
+1. Loading and preprocessing the data: Where the data is loaded, cleaned and made ready to analyze.   
+2. What is mean total number of steps taken per day?   
+3. What is the average daily activity pattern?   
+4. Strategy to handle missing values   
+5. Are there differences in activity patterns between weekdays and weekends?  
+*****
 
 
 
@@ -22,7 +28,7 @@ unzip(zipFile)
 activityData <- read.csv("activity.csv")
 ```
 
-Let's analyze the imported activityData fata.frame
+Let's analyze the imported activityData data.frame
 
 ```r
 print(str(activityData))
@@ -37,8 +43,8 @@ print(str(activityData))
 ```
 
 After loading the dataset, it is apparent that the $date variable is of class
-"factor". Hence, the following steps will convert it to type "date".
-Note: Missing values coded as 'NA' are not handelled here and will be handelled in subsequent steps.
+"factor". Hence, the subsequent steps will convert it to a "date" type.  
+**Note:** Missing values coded as 'NA' are not handelled here and will be handelled in subsequent steps.
 
 ```r
 activityData$date <-as.Date(activityData$date)
@@ -52,12 +58,12 @@ print(str(activityData))
 ##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ## NULL
 ```
-
-Now we have a clean data set to work with.
+Now, we have a clean data set to work with.
+*****
 
 ## What is mean total number of steps taken per day?
 
-Plotting the total steps taken each day
+Plotting the total steps taken per day
 
 ```r
 activityData2 <-ddply(activityData, ~date , summarize, 
@@ -142,10 +148,11 @@ print(activityData2)
 ## 60 2012-11-29      7047    24.4688            0
 ## 61 2012-11-30        NA         NA           NA
 ```
-
+*****
 
 ## What is the average daily activity pattern?
 
+Plotting the average number steps (accross all days) per time interval
 
 ```r
 activityData3 <-ddply(activityData, ~interval , summarize, 
@@ -156,13 +163,15 @@ g <- ggplot(activityData3, aes(x = interval, y = mean_steps))
 g <- g + geom_line()
 labelValue <- "Max value"
 g <- g + annotate("text", x=xMax, y=yMax, label=labelValue)
-g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number of steps taken per interval on all days")
+g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title = "Average number steps (accross all days) per time interval")
 print(g)
 ```
 
 ![plot of chunk AverageStepsGraph](figure/AverageStepsGraph.png) 
 
-Hence the maximum value occured at interval 835 and had the value of 206.169811320755. This is illustrated in the above graph with the annotation 'Max value' 
+>Hence, the maximum value occured at interval 835 and has the value of 206.169811320755. This is illustrated in the above graph with the annotation 'Max value' 
+</br>
+*****
 
 ## Imputing missing values
 
@@ -186,8 +195,9 @@ summary(activityData)
 
 
 
-from this we see that NA's only exist in the $steps variable and that there are 2304 of them which constitues for 13.1148 %.
+From this we see that NA's only exist in the $steps variable and that there are 2304 of them which constitues for 13.1148 %.
 
+Since, the total number of missing values are not that significant, let us use the mean of the 5 minute interval to replace the missing value. In this way, there is no impact to the overall statistics.
 
 ```r
 tidyData<- activityData
@@ -205,9 +215,11 @@ summary(tidyData)
 ##  3rd Qu.: 27.0   3rd Qu.:2012-11-15   3rd Qu.:1766  
 ##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355
 ```
+
 As you can see above all the 2304 NA's are gone, but the summary statistics of the data set are still the same.
 
-### Analyzing the tidyData 
+### Analyzing the tidy data set 
+
 Plotting the total steps taken each day with the tidyData
 
 ```r
@@ -363,6 +375,10 @@ print(mrg[,c(1,4,7)])
 ## 60 2012-11-29                 0              0.00
 ## 61 2012-11-30                NA             34.11
 ```
+>Hence, as designed, the added data does not affect the overall statistics of the data set, however, the mean/median for perticular days are affected.
+<br/>
+
+*****
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -372,8 +388,7 @@ tidyData3<- tidyData
 tidyData3$DayType <- ifelse(!(weekdays(tidyData3$date) %in% c('Saturday','Sunday')), "Weekday", "Weekend")
 ```
 
-A panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
-
+Displayed below is a panel plot containing a time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).
 
 ```r
 tidyData4 <-ddply(tidyData3, ~interval+DayType , summarize, 
@@ -386,5 +401,23 @@ print(g)
 ```
 
 ![plot of chunk DayTypePlot](figure/DayTypePlot.png) 
+
+Let's analyze the difference between weekends and weekdays
+
+```r
+tidyData4 <-ddply(tidyData3, ~interval+DayType , summarize, 
+                     mean_steps = mean(steps, na.rm = TRUE))
+g <- ggplot(tidyData4, aes(x = interval, y = mean_steps))
+g <- g + stat_summary(aes(colour="Difference",shape="difference",group=1), fun.y=diff, geom="line", size=1)
+g <- g + theme(legend.position="bottom")
+g <- g + xlab("Interval") + ylab("Differnece (Weekend - Weekday)") + labs(title = "Differnece between the average number of steps on Weekend and Weekday")
+print(g)
+```
+
+![plot of chunk DeltaByDayTypePlot](figure/DeltaByDayTypePlot.png) 
+
+> From the plot above we see that the average number of steps on weekdays is greater for intervals less than 1000 and greater than 500. In contrast, on weekends the average number of steps taken is greater for interverals greater than 1000.
+</br>
+*****
 
 EOF
