@@ -75,7 +75,6 @@ g <- g + xlab("Interval") + ylab("Average number of steps taken") + labs(title =
 print(g)
 ```
 
-
 ## Imputing missing values
 
 ### Strategy for dealing with missing values
@@ -83,8 +82,19 @@ Finding the total number of rows with missing values (coded as NA).
 ```{r}
 summary(activityData)
 ```
-from this we see that NA's only exist in the $steps variable and that there are 2304 of them.
 
+```{r na_analysis, echo=FALSE}
+numberNa <- sum(is.na(activityData))
+percentNa <- (numberNa/length(activityData$steps))*100
+```
+
+#Modify
+from this we see that NA's only exist in the $steps variable and that there are "r numberNa" of them which constitues for 'r perncentNa' %.
+
+```{r}
+ddply(activityData, steps~date, summarize)
+
+```
 
 
 

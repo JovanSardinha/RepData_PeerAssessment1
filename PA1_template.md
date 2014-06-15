@@ -162,7 +162,6 @@ print(g)
 
 ![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2.png) 
 
-
 ## Imputing missing values
 
 ### Strategy for dealing with missing values
@@ -182,8 +181,21 @@ summary(activityData)
 ##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355  
 ##  NA's   :2304
 ```
-from this we see that NA's only exist in the $steps variable and that there are 2304 of them.
 
+
+
+#Modify
+from this we see that NA's only exist in the $steps variable and that there are "r numberNa" of them which constitues for 'r perncentNa' %.
+
+
+```r
+ddply(activityData, activityData[,1:2])
+```
+
+```
+## Error: no applicable method for 'as.quoted' applied to an object of class
+## "data.frame"
+```
 
 
 

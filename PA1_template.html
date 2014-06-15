@@ -350,7 +350,15 @@ print(g)
 ##  NA&#39;s   :2304
 </code></pre>
 
-<p>from this we see that NA&#39;s only exist in the $steps variable and that there are 2304 of them.</p>
+<p>#Modify
+from this we see that NA&#39;s only exist in the $steps variable and that there are &ldquo;r numberNa&rdquo; of them which constitues for &#39;r perncentNa&#39; %.</p>
+
+<pre><code class="r">ddply(activityData, activityData[,1:2])
+</code></pre>
+
+<pre><code>## Error: no applicable method for &#39;as.quoted&#39; applied to an object of class
+## &quot;data.frame&quot;
+</code></pre>
 
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 
